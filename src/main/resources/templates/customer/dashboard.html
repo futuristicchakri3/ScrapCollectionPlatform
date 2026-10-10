@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Dashboard — Scrap Connection</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+    <main class="main-content">
+        <div class="container">
+            <div th:replace="~{fragments/alerts :: alerts}"></div>
+
+            <!-- Welcome Header -->
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:2rem;">
+                <div>
+                    <span class="badge badge-active" style="margin-bottom:0.4rem;">Customer Portal</span>
+                    <h1 style="font-size:2.2rem;">Hello, <span th:text="${customer.fullName}">Customer</span>! 👋</h1>
+                    <p style="color:var(--text-muted); font-size:0.95rem;">
+                        Neighborhood Locality: <strong style="color:var(--text-main);" th:text="${customer.defaultLocality}">Madhapur</strong>
+                    </p>
+                </div>
+                <div style="display:flex; gap:0.75rem;">
+                    <a th:href="@{/customer/book-scrap}" class="btn btn-primary" id="btnDashBookScrap">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        Schedule Pickup
+                    </a>
+                    <a th:href="@{/marketplace}" class="btn btn-secondary">
+                        Shop Recycled Goods
+                    </a>
+                </div>
+            </div>
+
+            <!-- Metric Cards -->
+            <div class="grid grid-cols-4" style="margin-bottom:2rem;">
+                <div class="stat-card">
+                    <div class="stat-icon stat-icon-green">💰</div>
+                    <div>
+                        <div class="stat-value">₹<span th:text="${#numbers.formatDecimal(totalAmountReceived, 1, 2)}">0.00</span></div>
+                        <div class="stat-label">Total Scrap Earned</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon stat-icon-blue">⚖️</div>
+                    <div>
+                        <div class="stat-value"><span th:text="${#numbers.formatDecimal(totalWeightSold, 1, 1)}">0.0</span> <span style="font-size:1rem;">kg</span></div>
+                        <div class="stat-label">Total Recycled Weight</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon stat-icon-gold">🎫</div>
+                    <div>
+                        <div class="stat-value">₹<span th:text="${#numbers.formatDecimal(couponBalance, 1, 2)}">0.00</span></div>
+                        <div class="stat-label">Coupon Wallet Balance</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon stat-icon-purple">🏅</div>
+                    <div>
+                        <div class="stat-value" th:text="${loyaltyPoints}">0</div>
+                        <div class="stat-label">Loyalty Reward Points</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Booking Lifecycle Summary Pills -->
+            <div class="card" style="margin-bottom:2rem; padding:1.25rem 1.75rem;">
+                <div class="grid grid-cols-4" style="text-align:center;">
+                    <div>
+                        <span class="badge badge-accepted" style="font-size:0.9rem;" th:text="${upcomingCount}">0</span>
+                        <div style="font-size:0.85rem; color:var(--text-muted); margin-top:0.35rem; font-weight:600;">Upcoming Pickups</div>
+                    </div>
+                    <div>
+                        <span class="badge badge-progress" style="font-size:0.9rem;" th:text="${inProgressCount}">0</span>
+                        <div style="font-size:0.85rem; color:var(--text-muted); margin-top:0.35rem; font-weight:600;">In Progress</div>
+                    </div>
+                    <div>
+                        <span class="badge badge-completed" style="font-size:0.9rem;" th:text="${completedCount}">0</span>
+                        <div style="font-size:0.85rem; color:var(--text-muted); margin-top:0.35rem; font-weight:600;">Completed Pickups</div>
+                    </div>
+                    <div>
+                        <span class="badge badge-cancelled" style="font-size:0.9rem;" th:text="${cancelledCount}">0</span>
+                        <div style="font-size:0.85rem; color:var(--text-muted); margin-top:0.35rem; font-weight:600;">Cancelled Pickups</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Pickups -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Recent Pickup Bookings</h3>
+                    <a th:href="@{/customer/bookings}" class="btn btn-outline-primary btn-sm">View All History →</a>
+                </div>
+
+                <div th:if="${#lists.isEmpty(recentBookings)}" style="text-align:center; padding:3rem 1rem;">
+                    <div style="font-size:2.5rem; margin-bottom:0.75rem;">📦</div>
+                    <h4>No Scrap Pickups Scheduled Yet</h4>
+                    <p style="color:var(--text-muted); max-width:420px; margin:0.5rem auto 1.5rem auto; font-size:0.9rem;">
+                        Schedule your first scrap pickup in less than 2 minutes. Local dealers weigh at your door and pay immediately!
+                    </p>
+                    <a th:href="@{/customer/book-scrap}" class="btn btn-primary btn-sm">Schedule Pickup Now</a>
+                </div>
+
+                <div th:if="${!#lists.isEmpty(recentBookings)}" class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Reference</th>
+                                <th>Date & Slot</th>
+                                <th>Est. Weight</th>
+                                <th>Status</th>
+                                <th>Assigned Dealer</th>
+                                <th>Amount</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="b : ${recentBookings}">
+                                <td>
+                                    <strong style="color:var(--primary-dark);" th:text="${b.bookingReference}">SC-1234</strong>
+                                </td>
+                                <td>
+                                    <div th:text="${#temporals.format(b.preferredDate, 'dd MMM yyyy')}">10 Oct 2026</div>
+                                    <div style="font-size:0.75rem; color:var(--text-muted);" th:text="${b.timeSlot}">10:00 AM</div>
+                                </td>
+                                <td><span th:text="${b.totalEstimatedWeight}">5.0</span> kg</td>
+                                <td>
+                                    <span th:if="${b.status.name() == 'REQUESTED'}" class="badge badge-requested">Requested</span>
+                                    <span th:if="${b.status.name() == 'ACCEPTED'}" class="badge badge-accepted">Accepted</span>
+                                    <span th:if="${b.status.name() == 'PICKUP_IN_PROGRESS'}" class="badge badge-progress">In Progress</span>
+                                    <span th:if="${b.status.name() == 'COMPLETED'}" class="badge badge-completed">Completed</span>
+                                    <span th:if="${b.status.name() == 'CANCELLED'}" class="badge badge-cancelled">Cancelled</span>
+                                </td>
+                                <td>
+                                    <span th:if="${b.assignedShopkeeper != null}" th:text="${b.assignedShopkeeper.shopName}">Shop Name</span>
+                                    <span th:if="${b.assignedShopkeeper == null}" style="color:var(--text-muted); font-style:italic;">Awaiting Dealer</span>
+                                </td>
+                                <td>
+                                    <span th:if="${b.status.name() == 'COMPLETED'}" style="font-weight:700; color:var(--primary-dark);">
+                                        ₹<span th:text="${#numbers.formatDecimal(b.totalAmount, 1, 2)}">100.00</span>
+                                    </span>
+                                    <span th:if="${b.status.name() != 'COMPLETED'}" style="color:var(--text-muted);">-</span>
+                                </td>
+                                <td>
+                                    <a th:href="@{/customer/bookings/{id}(id=${b.id})}" class="btn btn-secondary btn-sm">Details</a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+    <script th:src="@{/js/main.js}"></script>
+</body>
+</html>

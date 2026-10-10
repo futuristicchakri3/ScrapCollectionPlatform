@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Assigned Pickups — Scrap Connection</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+    <main class="main-content">
+        <div class="container">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:2rem;">
+                <div>
+                    <a th:href="@{/shopkeeper/dashboard}" style="font-size:0.875rem; color:var(--text-muted); font-weight:600;">← Back to Dashboard</a>
+                    <h1 style="font-size:2.2rem; margin-top:0.4rem;">My Active Pickups</h1>
+                    <p style="color:var(--text-muted);">Manage scheduled customer visits, navigate to addresses, and complete settlements</p>
+                </div>
+                <a th:href="@{/shopkeeper/requests}" class="btn btn-outline-primary">Find More Requests</a>
+            </div>
+
+            <div th:replace="~{fragments/alerts :: alerts}"></div>
+
+            <div class="card">
+                <div th:if="${#lists.isEmpty(pickups)}" style="text-align:center; padding:3.5rem 1rem;">
+                    <div style="font-size:2.5rem; margin-bottom:0.75rem;">🚚</div>
+                    <h3>No Active Pickups Scheduled</h3>
+                    <p style="color:var(--text-muted); font-size:0.9rem; margin-top:0.25rem;">
+                        You have no pending doorstep collections. Browse available requests in your area to book jobs!
+                    </p>
+                    <a th:href="@{/shopkeeper/requests}" class="btn btn-primary btn-sm" style="margin-top:1rem;">Browse Requests</a>
+                </div>
+
+                <div th:if="${!#lists.isEmpty(pickups)}" class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Booking Ref</th>
+                                <th>Date & Slot</th>
+                                <th>Customer Details & Address</th>
+                                <th>Status</th>
+                                <th>Navigation</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="p : ${pickups}">
+                                <td>
+                                    <strong style="color:var(--primary-dark);" th:text="${p.bookingReference}">SC-1234</strong>
+                                    <div style="font-size:0.75rem; color:var(--text-muted);" th:text="${'Est: ' + p.totalEstimatedWeight + ' kg'}">5 kg</div>
+                                </td>
+                                <td>
+                                    <div style="font-weight:700;" th:text="${#temporals.format(p.preferredDate, 'dd MMM yyyy')}">Date</div>
+                                    <div style="font-size:0.8rem; color:var(--text-muted);" th:text="${p.timeSlot}">Slot</div>
+                                </td>
+                                <td>
+                                    <div style="font-weight:700;" th:text="${p.customerProfile.fullName}">Customer Name</div>
+                                    <div style="font-size:0.85rem;" th:text="${p.pickupAddress}">Street Address</div>
+                                    <div style="font-size:0.8rem; color:var(--text-muted);" th:text="${p.locality + ' - ' + p.postalCode}">Locality, PIN</div>
+                                    <div style="font-size:0.825rem; font-weight:700; color:var(--primary); margin-top:0.2rem;" th:text="${'📞 ' + p.contactNumber}">Phone</div>
+                                </td>
+                                <td>
+                                    <span th:if="${p.status.name() == 'ACCEPTED'}" class="badge badge-accepted">Accepted</span>
+                                    <span th:if="${p.status.name() == 'PICKUP_IN_PROGRESS'}" class="badge badge-progress">In Progress</span>
+                                </td>
+                                <td>
+                                    <a th:href="'https://www.google.com/maps/search/?api=1&query=' + ${#uris.escapePath(p.pickupAddress + ', ' + p.locality + ', ' + p.postalCode)}"
+                                       target="_blank" class="btn btn-secondary btn-sm" style="font-size:0.8rem;">
+                                        📍 Open Maps
+                                    </a>
+                                </td>
+                                <td>
+                                    <div style="display:flex; flex-direction:column; gap:0.4rem;">
+                                        <form th:if="${p.status.name() == 'ACCEPTED'}" th:action="@{/shopkeeper/pickups/{id}/start(id=${p.id})}" method="post">
+                                            <button type="submit" class="btn btn-secondary btn-sm" style="width:100%;">
+                                                ▶️ Start Pickup
+                                            </button>
+                                        </form>
+                                        <a th:href="@{/shopkeeper/pickups/{id}/weigh(id=${p.id})}" class="btn btn-primary btn-sm" style="text-align:center;">
+                                            ⚖️ Weigh & Settle
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

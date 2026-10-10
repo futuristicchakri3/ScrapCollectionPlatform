@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recycled Products Marketplace — Scrap Connection</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+    <main class="main-content">
+        <div class="container">
+            <!-- Header & Coupon Balance Notice -->
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1.5rem; margin-bottom:2rem;">
+                <div>
+                    <span class="badge badge-active" style="margin-bottom:0.4rem;">Circular Marketplace</span>
+                    <h1 style="font-size:2.4rem;">Eco-Friendly Recycled Products</h1>
+                    <p style="color:var(--text-muted);">
+                        Purchase sustainable everyday goods handcrafted and manufactured from 100% recycled materials.
+                    </p>
+                </div>
+
+                <div sec:authorize="hasRole('CUSTOMER')" th:if="${couponBalance != null and couponBalance > 0}"
+                     style="background:var(--primary-light); border:1px solid var(--primary-border); border-radius:var(--radius-lg); padding:1rem 1.5rem; text-align:right;">
+                    <span style="font-size:0.8rem; color:var(--primary-dark); font-weight:700; text-transform:uppercase;">Coupon Wallet Balance</span>
+                    <div style="font-size:1.75rem; font-weight:800; color:var(--primary-dark);">
+                        ₹<span th:text="${#numbers.formatDecimal(couponBalance, 1, 2)}">0.00</span>
+                    </div>
+                    <span style="font-size:0.75rem; color:var(--text-muted);">Applicable towards any purchase!</span>
+                </div>
+            </div>
+
+            <div th:replace="~{fragments/alerts :: alerts}"></div>
+
+            <!-- Search and Filter Bar -->
+            <div class="card" style="margin-bottom:2.5rem; padding:1.25rem;">
+                <form th:action="@{/marketplace}" method="get" style="display:flex; gap:1rem; flex-wrap:wrap; align-items:center;">
+                    <div style="flex:1; min-width:240px;">
+                        <input type="text" name="search" th:value="${searchQuery}" class="form-control"
+                               placeholder="Search recycled notebooks, planters, tote bags...">
+                    </div>
+
+                    <div style="min-width:180px;">
+                        <select name="category" class="form-control" onchange="this.form.submit()">
+                            <option value="">All Categories</option>
+                            <option th:each="cat : ${categories}" th:value="${cat}" th:text="${cat}"
+                                    th:selected="${cat == selectedCategory}"></option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-sm">Search</button>
+                    <a th:href="@{/marketplace}" class="btn btn-secondary btn-sm">Reset</a>
+                </form>
+            </div>
+
+            <!-- Product Grid -->
+            <div th:if="${#lists.isEmpty(products)}" style="text-align:center; padding:4rem 1rem;">
+                <div style="font-size:3rem; margin-bottom:1rem;">🔍</div>
+                <h3>No Recycled Products Found</h3>
+                <p style="color:var(--text-muted); font-size:0.95rem; margin-top:0.5rem;">
+                    Try adjusting your search criteria or resetting filters.
+                </p>
+                <a th:href="@{/marketplace}" class="btn btn-primary btn-sm" style="margin-top:1rem;">Clear Filters</a>
+            </div>
+
+            <div th:if="${!#lists.isEmpty(products)}" class="grid grid-cols-3">
+                <div th:each="p : ${products}" class="product-card">
+                    <div class="product-image-box">
+                        <span th:if="${p.category == 'Stationery'}">📚</span>
+                        <span th:if="${p.category == 'Fashion'}">👜</span>
+                        <span th:if="${p.category == 'Home & Garden'}">🪴</span>
+                        <span th:if="${p.category == 'Home Decor'}">🕰️</span>
+                        <span th:if="${p.category == 'Kitchenware'}">🍽️</span>
+                        <span th:if="${p.category != 'Stationery' and p.category != 'Fashion' and p.category != 'Home & Garden' and p.category != 'Home Decor' and p.category != 'Kitchenware'}">🌱</span>
+                    </div>
+
+                    <div class="product-details">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.25rem;">
+                            <span class="product-category" th:text="${p.category}">Category</span>
+                            <span th:if="${p.availableStock > 0}" class="badge badge-completed" style="font-size:0.7rem;">In Stock</span>
+                            <span th:if="${p.availableStock <= 0}" class="badge badge-cancelled" style="font-size:0.7rem;">Sold Out</span>
+                        </div>
+
+                        <h4 class="product-title" th:text="${p.name}">Product Name</h4>
+                        <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1rem; line-height:1.4;"
+                           th:text="${#strings.abbreviate(p.description, 95)}">Description</p>
+
+                        <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-top:auto; margin-bottom:1rem;">
+                            <div class="product-price" style="margin:0;">
+                                ₹<span th:text="${#numbers.formatDecimal(p.price, 1, 2)}">199.00</span>
+                            </div>
+                            <span style="font-size:0.75rem; color:var(--text-muted);" th:text="${p.availableStock + ' left'}">10 left</span>
+                        </div>
+
+                        <div style="display:flex; gap:0.5rem;">
+                            <a th:href="@{/marketplace/product/{id}(id=${p.id})}" class="btn btn-secondary btn-sm" style="flex:1;">View Details</a>
+                            <form sec:authorize="hasRole('CUSTOMER')" th:action="@{/marketplace/cart/add}" method="post" style="flex:1;">
+                                <input type="hidden" name="productId" th:value="${p.id}">
+                                <input type="hidden" name="quantity" value="1">
+                                <button type="submit" class="btn btn-primary btn-sm" style="width:100%;" th:disabled="${p.availableStock <= 0}">
+                                    + Add to Cart
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+    <script th:src="@{/js/main.js}"></script>
+</body>
+</html>

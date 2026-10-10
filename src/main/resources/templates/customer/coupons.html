@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Coupon Wallet — Scrap Connection</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+    <main class="main-content">
+        <div class="container">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:2rem;">
+                <div>
+                    <a th:href="@{/customer/dashboard}" style="font-size:0.875rem; color:var(--text-muted); font-weight:600;">← Back to Dashboard</a>
+                    <h1 style="font-size:2.2rem; margin-top:0.4rem;">Digital Coupon Wallet</h1>
+                    <p style="color:var(--text-muted);">Manage coupons issued from completed scrap sales and track redemption ledger</p>
+                </div>
+                <a th:href="@{/marketplace}" class="btn btn-primary">
+                    🛍️ Spend in Recycled Marketplace
+                </a>
+            </div>
+
+            <div th:replace="~{fragments/alerts :: alerts}"></div>
+
+            <!-- Balance Card -->
+            <div class="card" style="background:linear-gradient(135deg, #065f46, #047857); color:white; padding:2rem; margin-bottom:2rem; border-radius:var(--radius-xl);">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+                    <div>
+                        <span style="font-size:0.9rem; color:#a7f3d0; text-transform:uppercase; letter-spacing:0.05em; font-weight:700;">Available Marketplace Balance</span>
+                        <div style="font-size:3rem; font-weight:800; font-family:var(--font-heading); margin-top:0.25rem;">
+                            ₹<span th:text="${#numbers.formatDecimal(availableBalance, 1, 2)}">0.00</span>
+                        </div>
+                        <p style="color:#d1fae5; font-size:0.875rem; margin-top:0.5rem;">
+                            Automatically applied during checkout for any recycled goods! Partial redemption supported.
+                        </p>
+                    </div>
+                    <div>
+                        <a th:href="@{/marketplace}" class="btn btn-secondary btn-lg" style="background:white; color:var(--primary-dark);">
+                            Browse Catalog
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Coupons List -->
+            <div class="card" style="margin-bottom:2.5rem;">
+                <div class="card-header">
+                    <h3 class="card-title">Issued Scrap Coupons</h3>
+                </div>
+
+                <div th:if="${#lists.isEmpty(coupons)}" style="text-align:center; padding:3rem 1rem;">
+                    <div style="font-size:2.5rem; margin-bottom:0.75rem;">🎫</div>
+                    <h4>No Coupons in Wallet</h4>
+                    <p style="color:var(--text-muted); font-size:0.9rem; max-width:400px; margin:0.5rem auto 1rem auto;">
+                        When selling scrap to a partner shopkeeper, select "COUPON" settlement to receive digital wallet coupons!
+                    </p>
+                    <a th:href="@{/customer/book-scrap}" class="btn btn-outline-primary btn-sm">Schedule Pickup</a>
+                </div>
+
+                <div th:if="${!#lists.isEmpty(coupons)}" class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Coupon Code</th>
+                                <th>Issuing Shopkeeper</th>
+                                <th>Original Value</th>
+                                <th>Remaining Balance</th>
+                                <th>Issued Date</th>
+                                <th>Expiry Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="c : ${coupons}">
+                                <td>
+                                    <code style="font-weight:800; font-size:0.95rem; background:#f1f5f9; padding:0.2rem 0.5rem; border-radius:4px; color:var(--primary-dark);" th:text="${c.couponCode}">CPN-1234</code>
+                                </td>
+                                <td>
+                                    <strong th:text="${c.issuingShopkeeper.shopName}">Shop Name</strong>
+                                </td>
+                                <td>₹<span th:text="${#numbers.formatDecimal(c.originalAmount, 1, 2)}">100.00</span></td>
+                                <td>
+                                    <strong style="color:var(--primary-dark);">₹<span th:text="${#numbers.formatDecimal(c.remainingBalance, 1, 2)}">100.00</span></strong>
+                                </td>
+                                <td th:text="${#temporals.format(c.issuedAt, 'dd MMM yyyy')}">Date</td>
+                                <td th:text="${c.expiryDate != null ? #temporals.format(c.expiryDate, 'dd MMM yyyy') : 'No Expiry'}">Expiry</td>
+                                <td>
+                                    <span th:if="${c.status.name() == 'ACTIVE'}" class="badge badge-active">Active</span>
+                                    <span th:if="${c.status.name() == 'PARTIALLY_REDEEMED'}" class="badge badge-accepted">Partial</span>
+                                    <span th:if="${c.status.name() == 'EXHAUSTED'}" class="badge badge-completed">Exhausted</span>
+                                    <span th:if="${c.status.name() == 'EXPIRED'}" class="badge badge-cancelled">Expired</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Coupon Ledger -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Coupon Balance Ledger History</h3>
+                </div>
+
+                <div th:if="${#lists.isEmpty(ledgers)}" style="text-align:center; padding:2rem 1rem; color:var(--text-muted); font-size:0.9rem;">
+                    No ledger transactions recorded yet.
+                </div>
+
+                <div th:if="${!#lists.isEmpty(ledgers)}" class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Date & Time</th>
+                                <th>Type</th>
+                                <th>Coupon Code</th>
+                                <th>Amount</th>
+                                <th>Balance Before</th>
+                                <th>Balance After</th>
+                                <th>Description / Order Ref</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="l : ${ledgers}">
+                                <td th:text="${#temporals.format(l.timestamp, 'dd MMM yyyy, hh:mm a')}">Time</td>
+                                <td>
+                                    <span th:if="${l.transactionType.name() == 'ISSUED'}" class="badge badge-completed">Credit (+)</span>
+                                    <span th:if="${l.transactionType.name() == 'REDEEMED'}" class="badge badge-cancelled">Debit (-)</span>
+                                </td>
+                                <td><code th:text="${l.coupon.couponCode}">CPN-123</code></td>
+                                <td>
+                                    <strong th:text="${(l.transactionType.name() == 'ISSUED' ? '+' : '-') + ' ₹' + #numbers.formatDecimal(l.amount, 1, 2)}">₹50</strong>
+                                </td>
+                                <td>₹<span th:text="${#numbers.formatDecimal(l.balanceBefore, 1, 2)}">100</span></td>
+                                <td>₹<span th:text="${#numbers.formatDecimal(l.balanceAfter, 1, 2)}">50</span></td>
+                                <td th:text="${l.description}">Redeemed for order</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

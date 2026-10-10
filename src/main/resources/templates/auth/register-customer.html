@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Registration — Scrap Connection</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .auth-container {
+            max-width: 580px;
+            margin: 2rem auto;
+        }
+    </style>
+</head>
+<body>
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+    <main class="main-content">
+        <div class="container">
+            <div class="auth-container">
+                <div class="card" style="padding: 2.25rem;">
+                    <div style="text-align: center; margin-bottom: 1.5rem;">
+                        <span class="badge badge-accepted" style="margin-bottom: 0.5rem;">Sell Scrap from Home</span>
+                        <h2>Customer Registration</h2>
+                        <p style="color:var(--text-muted); font-size:0.9rem;">
+                            Join Scrap Connection to schedule doorstep pickups and earn coupon rewards.
+                        </p>
+                    </div>
+
+                    <div th:replace="~{fragments/alerts :: alerts}"></div>
+
+                    <form th:action="@{/register/customer}" th:object="${customerDto}" method="post">
+                        <!-- CSRF Token included automatically by Thymeleaf -->
+
+                        <div class="form-group">
+                            <label class="form-label" for="fullName">Full Name *</label>
+                            <input type="text" id="fullName" th:field="*{fullName}" class="form-control"
+                                   placeholder="e.g. Ramesh Kumar" required>
+                            <div class="form-error" th:if="${#fields.hasErrors('fullName')}" th:errors="*{fullName}"></div>
+                        </div>
+
+                        <div class="grid grid-cols-2">
+                            <div class="form-group">
+                                <label class="form-label" for="mobileNumber">Mobile Number (Login ID) *</label>
+                                <input type="tel" id="mobileNumber" th:field="*{mobileNumber}" class="form-control"
+                                       placeholder="e.g. 9876543210" pattern="[6-9][0-9]{9}" required>
+                                <div class="form-error" th:if="${#fields.hasErrors('mobileNumber')}" th:errors="*{mobileNumber}"></div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="email">Email Address (Optional)</label>
+                                <input type="email" id="email" th:field="*{email}" class="form-control"
+                                       placeholder="ramesh@example.com">
+                                <div class="form-error" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2">
+                            <div class="form-group">
+                                <label class="form-label" for="password">Password *</label>
+                                <input type="password" id="password" th:field="*{password}" class="form-control"
+                                       placeholder="Minimum 6 characters" required>
+                                <div class="form-error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="confirmPassword">Confirm Password *</label>
+                                <input type="password" id="confirmPassword" th:field="*{confirmPassword}" class="form-control"
+                                       placeholder="Re-enter password" required>
+                                <div class="form-error" th:if="${#fields.hasErrors('confirmPassword')}" th:errors="*{confirmPassword}"></div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="locality">Locality / Neighborhood Area *</label>
+                            <input type="text" id="locality" th:field="*{locality}" class="form-control"
+                                   placeholder="e.g. Madhapur, Hitech City, Gachibowli" required>
+                            <div class="form-error" th:if="${#fields.hasErrors('locality')}" th:errors="*{locality}"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="address">Pickup Street Address *</label>
+                            <textarea id="address" th:field="*{address}" class="form-control" rows="2"
+                                      placeholder="Flat/House number, building name, street name" required></textarea>
+                            <div class="form-error" th:if="${#fields.hasErrors('address')}" th:errors="*{address}"></div>
+                        </div>
+
+                        <div class="form-check" style="margin-bottom: 1.5rem;">
+                            <input type="checkbox" id="termsAccepted" th:field="*{termsAccepted}" class="form-check-input" required>
+                            <label for="termsAccepted" style="font-size: 0.85rem; color: var(--text-muted); cursor: pointer;">
+                                I agree to the <a href="#" style="color:var(--primary); font-weight:600;">Terms & Conditions</a> and consent to receiving OTP verification on my mobile number.
+                            </label>
+                        </div>
+                        <div class="form-error" th:if="${#fields.hasErrors('termsAccepted')}" th:errors="*{termsAccepted}"></div>
+
+                        <button type="submit" class="btn btn-primary" style="width: 100%;" id="btnCustomerRegister">
+                            Register & Send Mobile OTP
+                        </button>
+                    </form>
+
+                    <div style="text-align: center; margin-top: 1.5rem; font-size: 0.875rem; color: var(--text-muted);">
+                        Already registered? <a th:href="@{/login}" style="font-weight: 700; color: var(--primary);">Sign in here</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

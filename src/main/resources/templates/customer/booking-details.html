@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Details — Scrap Connection</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .timeline {
+            position: relative;
+            padding-left: 2rem;
+            margin-top: 1rem;
+        }
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 7px;
+            top: 4px;
+            bottom: 4px;
+            width: 2px;
+            background: var(--border-color);
+        }
+        .timeline-item {
+            position: relative;
+            margin-bottom: 1.25rem;
+        }
+        .timeline-dot {
+            position: absolute;
+            left: -2rem;
+            top: 4px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--primary);
+            border: 3px solid white;
+            box-shadow: 0 0 0 1px var(--border-color);
+        }
+    </style>
+</head>
+<body>
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+    <main class="main-content">
+        <div class="container">
+            <div style="margin-bottom: 1.5rem;">
+                <a th:href="@{/customer/bookings}" style="font-size:0.875rem; color:var(--text-muted); font-weight:600;">← Back to All Bookings</a>
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-top:0.5rem;">
+                    <div>
+                        <h1 style="font-size:2rem;">Booking <span style="color:var(--primary-dark);" th:text="${booking.bookingReference}">SC-1234</span></h1>
+                        <p style="color:var(--text-muted);">Scheduled on <span th:text="${#temporals.format(booking.createdAt, 'dd MMM yyyy, hh:mm a')}">Date</span></p>
+                    </div>
+                    <div>
+                        <span th:if="${booking.status.name() == 'REQUESTED'}" class="badge badge-requested" style="font-size:0.9rem; padding:0.4rem 1rem;">Requested</span>
+                        <span th:if="${booking.status.name() == 'ACCEPTED'}" class="badge badge-accepted" style="font-size:0.9rem; padding:0.4rem 1rem;">Accepted by Dealer</span>
+                        <span th:if="${booking.status.name() == 'PICKUP_IN_PROGRESS'}" class="badge badge-progress" style="font-size:0.9rem; padding:0.4rem 1rem;">Pickup In Progress</span>
+                        <span th:if="${booking.status.name() == 'COMPLETED'}" class="badge badge-completed" style="font-size:0.9rem; padding:0.4rem 1rem;">Completed</span>
+                        <span th:if="${booking.status.name() == 'CANCELLED'}" class="badge badge-cancelled" style="font-size:0.9rem; padding:0.4rem 1rem;">Cancelled</span>
+                    </div>
+                </div>
+            </div>
+
+            <div th:replace="~{fragments/alerts :: alerts}"></div>
+
+            <div class="grid grid-cols-3" style="gap:1.5rem; margin-bottom:2rem;">
+                <!-- Main Booking & Material Details (2 cols) -->
+                <div style="grid-column: span 2;">
+                    <div class="card" style="margin-bottom:1.5rem;">
+                        <h3 class="card-title" style="margin-bottom:1rem;">Pickup Information</h3>
+                        <div class="grid grid-cols-2" style="gap:1rem; font-size:0.925rem;">
+                            <div>
+                                <span style="color:var(--text-muted); display:block; font-size:0.8rem;">Scheduled Date</span>
+                                <strong th:text="${#temporals.format(booking.preferredDate, 'EEEE, dd MMMM yyyy')}">Date</strong>
+                            </div>
+                            <div>
+                                <span style="color:var(--text-muted); display:block; font-size:0.8rem;">Time Slot</span>
+                                <strong th:text="${booking.timeSlot}">10:00 AM - 01:00 PM</strong>
+                            </div>
+                            <div>
+                                <span style="color:var(--text-muted); display:block; font-size:0.8rem;">Contact Number</span>
+                                <strong th:text="${booking.contactNumber}">9876543210</strong>
+                            </div>
+                            <div>
+                                <span style="color:var(--text-muted); display:block; font-size:0.8rem;">Locality</span>
+                                <strong th:text="${booking.locality}">Madhapur</strong>
+                            </div>
+                        </div>
+
+                        <div style="margin-top:1rem; padding-top:1rem; border-top:1px solid var(--border-color);">
+                            <span style="color:var(--text-muted); display:block; font-size:0.8rem;">Pickup Address</span>
+                            <div th:text="${booking.pickupAddress}">Street address details</div>
+                        </div>
+
+                        <div th:if="${booking.additionalInstructions != null and !booking.additionalInstructions.isBlank()}" style="margin-top:0.75rem;">
+                            <span style="color:var(--text-muted); display:block; font-size:0.8rem;">Special Instructions</span>
+                            <div style="font-style:italic;" th:text="${booking.additionalInstructions}">Notes</div>
+                        </div>
+                    </div>
+
+                    <!-- Materials Breakdown -->
+                    <div class="card" style="margin-bottom:1.5rem;">
+                        <h3 class="card-title" style="margin-bottom:1rem;">Materials & Weighing Record</h3>
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Material Category</th>
+                                        <th>Est. Weight</th>
+                                        <th>Actual Weighed</th>
+                                        <th>Rate applied</th>
+                                        <th>Line Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="m : ${booking.materials}">
+                                        <td>
+                                            <strong th:text="${m.category.displayName}">Category</strong>
+                                        </td>
+                                        <td><span th:text="${m.estimatedWeightKg}">5.0</span> kg</td>
+                                        <td>
+                                            <span th:if="${booking.status.name() == 'COMPLETED'}" th:text="${m.actualWeightKg + ' kg'}">-</span>
+                                            <span th:if="${booking.status.name() != 'COMPLETED'}" style="color:var(--text-muted);">-</span>
+                                        </td>
+                                        <td>
+                                            <span th:if="${booking.status.name() == 'COMPLETED'}">₹<span th:text="${#numbers.formatDecimal(m.pricePerKg, 1, 2)}">14.00</span> / kg</span>
+                                            <span th:if="${booking.status.name() != 'COMPLETED'}" style="color:var(--text-muted);">-</span>
+                                        </td>
+                                        <td>
+                                            <span th:if="${booking.status.name() == 'COMPLETED'}" style="font-weight:700; color:var(--primary-dark);">
+                                                ₹<span th:text="${#numbers.formatDecimal(m.lineTotal, 1, 2)}">70.00</span>
+                                            </span>
+                                            <span th:if="${booking.status.name() != 'COMPLETED'}" style="color:var(--text-muted);">-</span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Settlement Receipt (If completed) -->
+                    <div th:if="${settlement != null}" class="card" style="background:#ecfdf5; border-color:var(--primary-border);">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                            <h3 class="card-title" style="color:var(--primary-dark);">Official Scrap Settlement Receipt</h3>
+                            <span class="badge badge-completed">Verified & Paid</span>
+                        </div>
+                        <div class="grid grid-cols-2" style="font-size:0.925rem; gap:1rem;">
+                            <div>
+                                <span style="color:var(--text-muted); font-size:0.8rem;">Gross Scrap Value:</span>
+                                <div>₹<strong th:text="${#numbers.formatDecimal(settlement.grossAmount, 1, 2)}">100.00</strong></div>
+                            </div>
+                            <div>
+                                <span style="color:var(--text-muted); font-size:0.8rem;">Deductions:</span>
+                                <div>₹<strong th:text="${#numbers.formatDecimal(settlement.deductions, 1, 2)}">0.00</strong>
+                                <span th:if="${settlement.deductionReason != null}" th:text="'(' + ${settlement.deductionReason} + ')'" style="font-size:0.8rem;"></span>
+                                </div>
+                            </div>
+                            <div>
+                                <span style="color:var(--text-muted); font-size:0.8rem;">Settlement Payout Method:</span>
+                                <div>
+                                    <span class="badge badge-accepted" th:text="${settlement.settlementMethod}">CASH</span>
+                                    <span th:if="${settlement.settlementMethod.name() == 'COUPON'}" style="font-size:0.8rem; color:var(--primary-dark); font-weight:600;">(Added to Coupon Wallet!)</span>
+                                </div>
+                            </div>
+                            <div>
+                                <span style="color:var(--text-muted); font-size:0.8rem;">Net Payout Amount:</span>
+                                <div style="font-size:1.35rem; font-weight:800; color:var(--primary-dark);">
+                                    ₹<span th:text="${#numbers.formatDecimal(settlement.netAmount, 1, 2)}">100.00</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Sidebar (Dealer Info & Status Timeline) -->
+                <div>
+                    <!-- Assigned Dealer Card -->
+                    <div class="card" style="margin-bottom:1.5rem;">
+                        <h4 style="margin-bottom:0.75rem;">Assigned Dealer</h4>
+                        <div th:if="${booking.assignedShopkeeper != null}">
+                            <div style="font-size:1.15rem; font-weight:700;" th:text="${booking.assignedShopkeeper.shopName}">Shop Name</div>
+                            <div style="font-size:0.875rem; color:var(--text-muted); margin-bottom:0.5rem;" th:text="${'Prop. ' + booking.assignedShopkeeper.ownerName}">Owner Name</div>
+                            <div style="font-size:0.825rem; color:var(--text-muted);" th:text="${booking.assignedShopkeeper.shopAddress}">Address</div>
+                            <div style="margin-top:0.75rem;">
+                                <a th:href="'tel:' + ${booking.assignedShopkeeper.user.mobileNumber}" class="btn btn-outline-primary btn-sm" style="width:100%;">
+                                    📞 Call Dealer
+                                </a>
+                            </div>
+                        </div>
+                        <div th:if="${booking.assignedShopkeeper == null}" style="color:var(--text-muted); font-size:0.875rem;">
+                            Your pickup request is broadcasting to verified scrap shopkeepers in <strong th:text="${booking.locality}">your area</strong>. Once accepted, their shop contact details will appear here.
+                        </div>
+                    </div>
+
+                    <!-- Lifecycle Timeline -->
+                    <div class="card" style="margin-bottom:1.5rem;">
+                        <h4 style="margin-bottom:0.5rem;">Tracking History</h4>
+                        <div class="timeline">
+                            <div th:each="h : ${statusHistories}" class="timeline-item">
+                                <div class="timeline-dot"></div>
+                                <div style="font-weight:700; font-size:0.85rem;" th:text="${h.toStatus}">STATUS</div>
+                                <div style="font-size:0.8rem; color:var(--text-muted);" th:text="${h.remarks}">Remarks</div>
+                                <div style="font-size:0.75rem; color:var(--text-light);" th:text="${#temporals.format(h.timestamp, 'dd MMM, hh:mm a')}">Time</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cancellation action if permissible -->
+                    <div th:if="${booking.status.name() == 'REQUESTED' or booking.status.name() == 'ACCEPTED'}" class="card" style="border-color:#fecaca;">
+                        <h4 style="color:var(--danger); margin-bottom:0.5rem;">Cancel Booking</h4>
+                        <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:0.75rem;">
+                            Need to reschedule or cancel? You can cancel your pickup prior to collector arrival.
+                        </p>
+                        <form th:action="@{/customer/bookings/{id}/cancel(id=${booking.id})}" method="post">
+                            <input type="text" name="reason" class="form-control" style="margin-bottom:0.5rem; font-size:0.8rem;" placeholder="Reason for cancellation">
+                            <button type="submit" class="btn btn-danger btn-sm" style="width:100%;" onclick="return confirm('Are you sure you want to cancel this booking?')">
+                                Cancel Pickup
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

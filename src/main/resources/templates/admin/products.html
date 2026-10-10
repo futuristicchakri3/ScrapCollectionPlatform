@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recycled Products Inventory — Scrap Connection Admin</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+    <main class="main-content">
+        <div class="container">
+            <div style="margin-bottom: 2rem;">
+                <a th:href="@{/admin/dashboard}" style="font-size:0.875rem; color:var(--text-muted); font-weight:600;">← Back to Dashboard</a>
+                <h1 style="font-size:2.2rem; margin-top:0.4rem;">Marketplace Inventory & Product Catalog</h1>
+                <p style="color:var(--text-muted);">Manage product listings, inventory quantities, and pricing for the Recycled Goods Marketplace</p>
+            </div>
+
+            <div th:replace="~{fragments/alerts :: alerts}"></div>
+
+            <div class="grid grid-cols-3" style="gap:2rem;">
+                <!-- Product List (2 cols) -->
+                <div style="grid-column: span 2;">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Catalog Items (<span th:text="${#lists.size(products)}">0</span>)</h3>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Name & Category</th>
+                                        <th>Price</th>
+                                        <th>Stock</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="p : ${products}">
+                                        <td>
+                                            <strong th:text="${p.name}">Product Name</strong>
+                                            <div style="font-size:0.75rem; color:var(--text-muted);" th:text="${p.category}">Category</div>
+                                        </td>
+                                        <td>₹<span th:text="${#numbers.formatDecimal(p.price, 1, 2)}">100.00</span></td>
+                                        <td>
+                                            <strong th:text="${p.availableStock}">10</strong>
+                                            <span th:if="${p.availableStock <= 5}" class="badge badge-accepted" style="font-size:0.65rem;">Low Stock</span>
+                                        </td>
+                                        <td>
+                                            <span th:if="${p.active}" class="badge badge-completed">Active</span>
+                                            <span th:if="${!p.active}" class="badge badge-cancelled">Inactive</span>
+                                        </td>
+                                        <td>
+                                            <button type="button" class="btn btn-secondary btn-sm"
+                                                    th:attr="onclick='populateEditForm(' + ${p.id} + ', \'' + ${p.name} + '\', \'' + ${p.category} + '\', ' + ${p.price} + ', ' + ${p.availableStock} + ', \'' + ${p.active} + '\')'">
+                                                Edit
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Add / Edit Product Form (1 col) -->
+                <div>
+                    <div class="card">
+                        <h3 class="card-title" id="formHeading" style="margin-bottom:1rem;">Add New Product</h3>
+                        <form th:action="@{/admin/products/save}" th:object="${productDto}" method="post">
+                            <input type="hidden" id="prodId" th:field="*{id}">
+
+                            <div class="form-group">
+                                <label class="form-label" for="prodName">Product Name *</label>
+                                <input type="text" id="prodName" th:field="*{name}" class="form-control" placeholder="e.g. Recycled Paper Journal" required>
+                                <div class="form-error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="prodCategory">Category *</label>
+                                <input type="text" id="prodCategory" th:field="*{category}" class="form-control" placeholder="e.g. Stationery, Home Decor" required>
+                                <div class="form-error" th:if="${#fields.hasErrors('category')}" th:errors="*{category}"></div>
+                            </div>
+
+                            <div class="grid grid-cols-2">
+                                <div class="form-group">
+                                    <label class="form-label" for="prodPrice">Price (₹) *</label>
+                                    <input type="number" step="1" min="1" id="prodPrice" th:field="*{price}" class="form-control" placeholder="199" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label" for="prodStock">Stock Units *</label>
+                                    <input type="number" min="0" id="prodStock" th:field="*{availableStock}" class="form-control" placeholder="25" required>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="prodDesc">Description</label>
+                                <textarea id="prodDesc" th:field="*{description}" class="form-control" rows="3" placeholder="Materials used and benefits"></textarea>
+                            </div>
+
+                            <div class="form-check" style="margin-bottom:1.5rem;">
+                                <input type="checkbox" id="prodActive" th:field="*{active}" class="form-check-input">
+                                <label for="prodActive" style="font-size:0.875rem; font-weight:600; cursor:pointer;">Active in Marketplace</label>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary btn-sm" style="width:100%;" id="btnSaveProduct">
+                                Save Product
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+    <script>
+        function populateEditForm(id, name, category, price, stock, active) {
+            document.getElementById('formHeading').textContent = 'Edit Product #' + id;
+            document.getElementById('prodId').value = id;
+            document.getElementById('prodName').value = name;
+            document.getElementById('prodCategory').value = category;
+            document.getElementById('prodPrice').value = price;
+            document.getElementById('prodStock').value = stock;
+            document.getElementById('prodActive').checked = (active === 'true' || active === true);
+        }
+    </script>
+</body>
+</html>

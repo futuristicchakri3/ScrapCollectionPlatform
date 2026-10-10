@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loyalty Rewards — Scrap Connection</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+    <main class="main-content">
+        <div class="container">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:2rem;">
+                <div>
+                    <a th:href="@{/customer/dashboard}" style="font-size:0.875rem; color:var(--text-muted); font-weight:600;">← Back to Dashboard</a>
+                    <h1 style="font-size:2.2rem; margin-top:0.4rem;">Green Loyalty Rewards</h1>
+                    <p style="color:var(--text-muted);">Earn points every time you divert recyclable materials from local landfills</p>
+                </div>
+            </div>
+
+            <!-- Points Hero Banner -->
+            <div class="card" style="background:linear-gradient(135deg, #1e1b4b, #312e81); color:white; padding:2rem; margin-bottom:2rem; border-radius:var(--radius-xl);">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1.5rem;">
+                    <div>
+                        <span style="font-size:0.85rem; color:#a5b4fc; text-transform:uppercase; letter-spacing:0.05em; font-weight:700;">Your Eco Points Balance</span>
+                        <div style="font-size:3.5rem; font-weight:800; font-family:var(--font-heading); color:#fef08a; line-height:1.1; margin-top:0.25rem;">
+                            <span th:text="${totalPoints}">0</span> <span style="font-size:1.5rem; color:white; font-weight:600;">Points</span>
+                        </div>
+                        <p style="color:#c7d2fe; font-size:0.9rem; margin-top:0.5rem;">
+                            🌱 <strong>Reward Policy:</strong> 1 Eco Point is automatically credited for every ₹10 of completed scrap sales!
+                        </p>
+                    </div>
+
+                    <div style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); border-radius:var(--radius-lg); padding:1.25rem; max-width:320px;">
+                        <div style="font-size:0.9rem; font-weight:700; margin-bottom:0.25rem;">Eco Tier Status</div>
+                        <div style="font-size:1.1rem; color:#86efac; font-weight:800;">
+                            <span th:if="${totalPoints < 50}">Green Pioneer (Tier 1)</span>
+                            <span th:if="${totalPoints >= 50 and totalPoints < 200}">Recycling Champion (Tier 2)</span>
+                            <span th:if="${totalPoints >= 200}">Zero-Waste Hero (Tier 3)</span>
+                        </div>
+                        <div style="font-size:0.8rem; color:#cbd5e1; margin-top:0.4rem;">Keep recycling to unlock VIP doorstep scheduling & premium discounts.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transaction History -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Points Activity Ledger</h3>
+                </div>
+
+                <div th:if="${#lists.isEmpty(transactions)}" style="text-align:center; padding:3rem 1rem;">
+                    <div style="font-size:2.5rem; margin-bottom:0.75rem;">🏅</div>
+                    <h4>No Points Earned Yet</h4>
+                    <p style="color:var(--text-muted); font-size:0.9rem; max-width:400px; margin:0.5rem auto 1rem auto;">
+                        Schedule a scrap pickup and complete the sale to earn your first loyalty reward points!
+                    </p>
+                    <a th:href="@{/customer/book-scrap}" class="btn btn-primary btn-sm">Schedule Scrap Pickup</a>
+                </div>
+
+                <div th:if="${!#lists.isEmpty(transactions)}" class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>Transaction Type</th>
+                                <th>Points</th>
+                                <th>Linked Booking</th>
+                                <th>Activity Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="t : ${transactions}">
+                                <td th:text="${#temporals.format(t.timestamp, 'dd MMM yyyy, hh:mm a')}">Date</td>
+                                <td>
+                                    <span th:if="${t.transactionType.name() == 'EARNED'}" class="badge badge-completed">Earned</span>
+                                    <span th:if="${t.transactionType.name() == 'REDEEMED'}" class="badge badge-cancelled">Redeemed</span>
+                                </td>
+                                <td>
+                                    <strong style="color:var(--primary-dark); font-size:1.05rem;" th:text="${'+ ' + t.points + ' pts'}">+10 pts</strong>
+                                </td>
+                                <td>
+                                    <a th:if="${t.booking != null}" th:href="@{/customer/bookings/{id}(id=${t.booking.id})}"
+                                       th:text="${t.booking.bookingReference}" style="font-weight:700;">SC-1234</a>
+                                    <span th:if="${t.booking == null}">-</span>
+                                </td>
+                                <td th:text="${t.remarks}">Remarks</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

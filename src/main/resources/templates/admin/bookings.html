@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Scrap Bookings — Scrap Connection Admin</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+    <main class="main-content">
+        <div class="container">
+            <div style="margin-bottom: 2rem;">
+                <a th:href="@{/admin/dashboard}" style="font-size:0.875rem; color:var(--text-muted); font-weight:600;">← Back to Dashboard</a>
+                <h1 style="font-size:2.2rem; margin-top:0.4rem;">Platform Scrap Bookings Master Ledger</h1>
+                <p style="color:var(--text-muted);">Inspection and monitoring of all doorstep collections across all cities</p>
+            </div>
+
+            <div class="card">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Booking Ref</th>
+                                <th>Date</th>
+                                <th>Customer</th>
+                                <th>Locality</th>
+                                <th>Assigned Shopkeeper</th>
+                                <th>Status</th>
+                                <th>Weight (kg)</th>
+                                <th>Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="b : ${bookings}">
+                                <td><strong style="color:var(--primary-dark);" th:text="${b.bookingReference}">SC-1234</strong></td>
+                                <td th:text="${#temporals.format(b.preferredDate, 'dd MMM yyyy')}">Date</td>
+                                <td>
+                                    <strong th:text="${b.customerProfile.fullName}">Customer</strong>
+                                    <div style="font-size:0.75rem; color:var(--text-muted);" th:text="${b.contactNumber}">Phone</div>
+                                </td>
+                                <td th:text="${b.locality}">Locality</td>
+                                <td>
+                                    <span th:if="${b.assignedShopkeeper != null}" th:text="${b.assignedShopkeeper.shopName}">Shop Name</span>
+                                    <span th:if="${b.assignedShopkeeper == null}" style="color:var(--text-muted); font-style:italic;">Unassigned</span>
+                                </td>
+                                <td>
+                                    <span th:if="${b.status.name() == 'REQUESTED'}" class="badge badge-requested">Requested</span>
+                                    <span th:if="${b.status.name() == 'ACCEPTED'}" class="badge badge-accepted">Accepted</span>
+                                    <span th:if="${b.status.name() == 'PICKUP_IN_PROGRESS'}" class="badge badge-progress">In Progress</span>
+                                    <span th:if="${b.status.name() == 'COMPLETED'}" class="badge badge-completed">Completed</span>
+                                    <span th:if="${b.status.name() == 'CANCELLED'}" class="badge badge-cancelled">Cancelled</span>
+                                </td>
+                                <td>
+                                    <span th:text="${b.actualTotalWeight > 0 ? b.actualTotalWeight : b.totalEstimatedWeight}">5.0</span> kg
+                                </td>
+                                <td>
+                                    <span th:if="${b.totalAmount > 0}" style="font-weight:700; color:var(--primary-dark);">
+                                        ₹<span th:text="${#numbers.formatDecimal(b.totalAmount, 1, 2)}">100.00</span>
+                                    </span>
+                                    <span th:if="${b.totalAmount <= 0}">-</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

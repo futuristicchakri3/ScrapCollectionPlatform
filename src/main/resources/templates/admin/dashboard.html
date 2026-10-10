@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administrator Portal — Scrap Connection</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+    <main class="main-content">
+        <div class="container">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:2rem;">
+                <div>
+                    <span class="badge badge-accepted" style="margin-bottom:0.4rem;">System Administration</span>
+                    <h1 style="font-size:2.2rem; margin-top:0.4rem;">Platform Master Dashboard</h1>
+                    <p style="color:var(--text-muted);">Real-time governance, shop approvals, compliance tracking, and circular marketplace statistics</p>
+                </div>
+                <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+                    <a th:href="@{/admin/shopkeepers}" class="btn btn-primary" id="btnAdminApprovals">
+                        Manage Shopkeepers (<span th:text="${stats.pendingApprovals}">0</span> Pending)
+                    </a>
+                    <a th:href="@{/admin/materials}" class="btn btn-secondary">Scrap Rates</a>
+                    <a th:href="@{/admin/products}" class="btn btn-secondary">Product Catalog</a>
+                    <a th:href="@{/admin/audit-logs}" class="btn btn-secondary">Audit Logs</a>
+                </div>
+            </div>
+
+            <div th:replace="~{fragments/alerts :: alerts}"></div>
+
+            <!-- KPI Metric Cards Grid -->
+            <div class="grid grid-cols-4" style="margin-bottom:2rem;">
+                <div class="stat-card">
+                    <div class="stat-icon stat-icon-green">👥</div>
+                    <div>
+                        <div class="stat-value" th:text="${stats.totalCustomers}">0</div>
+                        <div class="stat-label">Registered Customers</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon stat-icon-blue">🏪</div>
+                    <div>
+                        <div class="stat-value" th:text="${stats.totalShopkeepers}">0</div>
+                        <div class="stat-label">Total Shopkeeper Accounts</div>
+                        <div style="font-size:0.75rem; color:#b45309; font-weight:700;" th:text="${stats.pendingApprovals + ' Pending Approval'}">0 Pending</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon stat-icon-gold">📦</div>
+                    <div>
+                        <div class="stat-value" th:text="${stats.totalBookings}">0</div>
+                        <div class="stat-label">Total Scrap Bookings</div>
+                        <div style="font-size:0.75rem; color:var(--primary-dark); font-weight:700;" th:text="${stats.completedPickups + ' Completed'}">0 Completed</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon stat-icon-purple">💰</div>
+                    <div>
+                        <div class="stat-value">₹<span th:text="${#numbers.formatDecimal(stats.totalScrapValue, 1, 2)}">0.00</span></div>
+                        <div class="stat-label">Total Scrap Value Settled</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Secondary Metrics Grid -->
+            <div class="grid grid-cols-4" style="margin-bottom:2rem;">
+                <div class="stat-card">
+                    <div class="stat-icon stat-icon-gold">🎫</div>
+                    <div>
+                        <div class="stat-value">₹<span th:text="${#numbers.formatDecimal(stats.totalCouponsIssued, 1, 2)}">0.00</span></div>
+                        <div class="stat-label">Coupons Issued</div>
+                        <div style="font-size:0.75rem; color:var(--text-muted);" th:text="${'Active Wallet: ₹' + #numbers.formatDecimal(stats.totalActiveCouponsBalance, 1, 2)}">₹0 Active</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon stat-icon-green">🏅</div>
+                    <div>
+                        <div class="stat-value" th:text="${stats.totalLoyaltyPoints}">0</div>
+                        <div class="stat-label">Loyalty Points Issued</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon stat-icon-blue">🛒</div>
+                    <div>
+                        <div class="stat-value" th:text="${stats.totalOrders}">0</div>
+                        <div class="stat-label">Marketplace Orders</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon stat-icon-purple">💵</div>
+                    <div>
+                        <div class="stat-value">₹<span th:text="${#numbers.formatDecimal(stats.totalRevenue, 1, 2)}">0.00</span></div>
+                        <div class="stat-label">Marketplace Sales Revenue</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Management Shortcuts & Recent Audit Logs -->
+            <div class="grid grid-cols-3" style="gap:2rem;">
+                <!-- Quick Navigation Cards -->
+                <div>
+                    <div class="card" style="margin-bottom:1.5rem;">
+                        <h3 class="card-title" style="margin-bottom:1rem;">Administrative Actions</h3>
+                        <div style="display:flex; flex-direction:column; gap:0.75rem;">
+                            <a th:href="@{/admin/shopkeepers}" class="btn btn-secondary btn-sm" style="justify-content:flex-start;">
+                                🛡️ Shopkeeper Verification & Approvals
+                            </a>
+                            <a th:href="@{/admin/materials}" class="btn btn-secondary btn-sm" style="justify-content:flex-start;">
+                                📈 Configure Standard Scrap Rates (per kg)
+                            </a>
+                            <a th:href="@{/admin/products}" class="btn btn-secondary btn-sm" style="justify-content:flex-start;">
+                                🛍️ Add / Edit Marketplace Recycled Products
+                            </a>
+                            <a th:href="@{/admin/bookings}" class="btn btn-secondary btn-sm" style="justify-content:flex-start;">
+                                📋 Platform-Wide Scrap Bookings Ledger
+                            </a>
+                            <a th:href="@{/admin/orders}" class="btn btn-secondary btn-sm" style="justify-content:flex-start;">
+                                🧾 Recycled Goods Customer Orders
+                            </a>
+                            <a th:href="@{/admin/audit-logs}" class="btn btn-secondary btn-sm" style="justify-content:flex-start;">
+                                📜 Security Compliance Audit Trail
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Administrative Audit Logs (2 cols) -->
+                <div style="grid-column: span 2;">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Recent Compliance Audit Trail</h3>
+                            <a th:href="@{/admin/audit-logs}" class="btn btn-outline-primary btn-sm">Full Audit Trail →</a>
+                        </div>
+
+                        <div th:if="${#lists.isEmpty(recentLogs)}" style="text-align:center; padding:2.5rem 1rem; color:var(--text-muted); font-size:0.9rem;">
+                            No administrative actions recorded yet.
+                        </div>
+
+                        <div th:if="${!#lists.isEmpty(recentLogs)}" class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Timestamp</th>
+                                        <th>Action</th>
+                                        <th>Target</th>
+                                        <th>Details</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="log : ${recentLogs}">
+                                        <td style="font-size:0.8rem;" th:text="${#temporals.format(log.timestamp, 'dd MMM, hh:mm a')}">Time</td>
+                                        <td>
+                                            <span class="badge badge-accepted" style="font-size:0.7rem;" th:text="${log.action}">APPROVE</span>
+                                        </td>
+                                        <td><code th:text="${log.targetEntity + '#' + log.targetEntityId}">Entity</code></td>
+                                        <td style="font-size:0.85rem;" th:text="${log.details}">Details</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

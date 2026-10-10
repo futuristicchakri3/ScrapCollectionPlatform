@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Scrap Bookings — Scrap Connection</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+    <main class="main-content">
+        <div class="container">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:2rem;">
+                <div>
+                    <a th:href="@{/customer/dashboard}" style="font-size:0.875rem; color:var(--text-muted); font-weight:600;">← Back to Dashboard</a>
+                    <h1 style="font-size:2.2rem; margin-top:0.4rem;">My Scrap Bookings</h1>
+                    <p style="color:var(--text-muted);">View status, track progress, and inspect completed transaction summaries</p>
+                </div>
+                <a th:href="@{/customer/book-scrap}" class="btn btn-primary">Schedule New Pickup</a>
+            </div>
+
+            <div th:replace="~{fragments/alerts :: alerts}"></div>
+
+            <!-- Status Filter Tabs -->
+            <div style="display:flex; gap:0.5rem; flex-wrap:wrap; margin-bottom:1.5rem;">
+                <a th:href="@{/customer/bookings}" class="btn btn-sm"
+                   th:classappend="${selectedStatus == null or selectedStatus == ''} ? 'btn-primary' : 'btn-secondary'">All Bookings</a>
+                <a th:href="@{/customer/bookings(status='REQUESTED')}" class="btn btn-sm"
+                   th:classappend="${selectedStatus == 'REQUESTED'} ? 'btn-primary' : 'btn-secondary'">Requested</a>
+                <a th:href="@{/customer/bookings(status='ACCEPTED')}" class="btn btn-sm"
+                   th:classappend="${selectedStatus == 'ACCEPTED'} ? 'btn-primary' : 'btn-secondary'">Accepted</a>
+                <a th:href="@{/customer/bookings(status='PICKUP_IN_PROGRESS')}" class="btn btn-sm"
+                   th:classappend="${selectedStatus == 'PICKUP_IN_PROGRESS'} ? 'btn-primary' : 'btn-secondary'">In Progress</a>
+                <a th:href="@{/customer/bookings(status='COMPLETED')}" class="btn btn-sm"
+                   th:classappend="${selectedStatus == 'COMPLETED'} ? 'btn-primary' : 'btn-secondary'">Completed</a>
+                <a th:href="@{/customer/bookings(status='CANCELLED')}" class="btn btn-sm"
+                   th:classappend="${selectedStatus == 'CANCELLED'} ? 'btn-primary' : 'btn-secondary'">Cancelled</a>
+            </div>
+
+            <div class="card">
+                <div th:if="${#lists.isEmpty(bookings)}" style="text-align:center; padding:3.5rem 1rem;">
+                    <div style="font-size:2.5rem; margin-bottom:0.75rem;">📋</div>
+                    <h3>No Bookings Found</h3>
+                    <p style="color:var(--text-muted); font-size:0.9rem; margin-top:0.25rem;">
+                        No scrap collection bookings match this criteria.
+                    </p>
+                </div>
+
+                <div th:if="${!#lists.isEmpty(bookings)}" class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Booking Ref</th>
+                                <th>Pickup Date & Slot</th>
+                                <th>Pickup Address</th>
+                                <th>Est. Weight</th>
+                                <th>Assigned Shopkeeper</th>
+                                <th>Status</th>
+                                <th>Final Amount</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="b : ${bookings}">
+                                <td>
+                                    <strong style="color:var(--primary-dark);" th:text="${b.bookingReference}">SC-123456</strong>
+                                </td>
+                                <td>
+                                    <div th:text="${#temporals.format(b.preferredDate, 'dd MMM yyyy')}">10 Oct 2026</div>
+                                    <div style="font-size:0.8rem; color:var(--text-muted);" th:text="${b.timeSlot}">Morning</div>
+                                </td>
+                                <td>
+                                    <div style="max-width:220px; font-size:0.875rem;" th:text="${b.pickupAddress}">Street Address</div>
+                                    <div style="font-size:0.75rem; color:var(--text-muted);" th:text="${b.locality}">Locality</div>
+                                </td>
+                                <td><span th:text="${b.totalEstimatedWeight}">5.0</span> kg</td>
+                                <td>
+                                    <span th:if="${b.assignedShopkeeper != null}">
+                                        <strong th:text="${b.assignedShopkeeper.shopName}">Shop Name</strong>
+                                        <div style="font-size:0.75rem; color:var(--text-muted);" th:text="${b.assignedShopkeeper.ownerName}">Owner</div>
+                                    </span>
+                                    <span th:if="${b.assignedShopkeeper == null}" style="color:var(--text-muted); font-style:italic;">Awaiting Dealer</span>
+                                </td>
+                                <td>
+                                    <span th:if="${b.status.name() == 'REQUESTED'}" class="badge badge-requested">Requested</span>
+                                    <span th:if="${b.status.name() == 'ACCEPTED'}" class="badge badge-accepted">Accepted</span>
+                                    <span th:if="${b.status.name() == 'PICKUP_IN_PROGRESS'}" class="badge badge-progress">In Progress</span>
+                                    <span th:if="${b.status.name() == 'COMPLETED'}" class="badge badge-completed">Completed</span>
+                                    <span th:if="${b.status.name() == 'CANCELLED'}" class="badge badge-cancelled">Cancelled</span>
+                                </td>
+                                <td>
+                                    <span th:if="${b.status.name() == 'COMPLETED'}" style="font-weight:700; color:var(--primary-dark);">
+                                        ₹<span th:text="${#numbers.formatDecimal(b.totalAmount, 1, 2)}">100.00</span>
+                                    </span>
+                                    <span th:if="${b.status.name() != 'COMPLETED'}" style="color:var(--text-muted);">-</span>
+                                </td>
+                                <td>
+                                    <a th:href="@{/customer/bookings/{id}(id=${b.id})}" class="btn btn-secondary btn-sm">Details</a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

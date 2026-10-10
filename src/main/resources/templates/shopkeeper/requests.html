@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Available Pickup Requests — Scrap Connection</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+    <main class="main-content">
+        <div class="container">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:2rem;">
+                <div>
+                    <a th:href="@{/shopkeeper/dashboard}" style="font-size:0.875rem; color:var(--text-muted); font-weight:600;">← Back to Dashboard</a>
+                    <h1 style="font-size:2.2rem; margin-top:0.4rem;">Available Neighborhood Pickup Requests</h1>
+                    <p style="color:var(--text-muted);">
+                        Requests in <strong th:text="${shopkeeper.locality + ', ' + shopkeeper.city}">Locality</strong> awaiting a shopkeeper
+                    </p>
+                </div>
+                <a th:href="@{/shopkeeper/pickups}" class="btn btn-secondary">My Active Pickups</a>
+            </div>
+
+            <div th:replace="~{fragments/alerts :: alerts}"></div>
+
+            <div th:if="${shopkeeper.approvalStatus.name() != 'APPROVED'}" class="alert alert-warning">
+                <strong>Notice:</strong> Your shop profile is pending administrator approval. You cannot accept requests until approved.
+            </div>
+
+            <div class="card">
+                <div th:if="${#lists.isEmpty(requests)}" style="text-align:center; padding:3.5rem 1rem;">
+                    <div style="font-size:2.5rem; margin-bottom:0.75rem;">📦</div>
+                    <h3>No Available Requests</h3>
+                    <p style="color:var(--text-muted); font-size:0.9rem;">
+                        There are currently no unclaimed scrap pickup requests in your area. Please check back shortly!
+                    </p>
+                </div>
+
+                <div th:if="${!#lists.isEmpty(requests)}" class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Booking Ref</th>
+                                <th>Preferred Date</th>
+                                <th>Time Slot</th>
+                                <th>Locality & PIN</th>
+                                <th>Est. Weight</th>
+                                <th>Materials</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="r : ${requests}">
+                                <td><strong style="color:var(--primary-dark);" th:text="${r.bookingReference}">SC-1234</strong></td>
+                                <td th:text="${#temporals.format(r.preferredDate, 'dd MMM yyyy')}">Date</td>
+                                <td th:text="${r.timeSlot}">Morning</td>
+                                <td>
+                                    <div th:text="${r.locality}">Locality</div>
+                                    <div style="font-size:0.75rem; color:var(--text-muted);" th:text="${r.postalCode}">PIN</div>
+                                </td>
+                                <td><span th:text="${r.totalEstimatedWeight}">5.0</span> kg</td>
+                                <td>
+                                    <span th:each="m : ${r.materials}">
+                                        <span class="badge badge-requested" th:text="${m.category.displayName}">Category</span>
+                                    </span>
+                                </td>
+                                <td>
+                                    <form th:if="${shopkeeper.approvalStatus.name() == 'APPROVED'}"
+                                          th:action="@{/shopkeeper/requests/{id}/accept(id=${r.id})}" method="post">
+                                        <button type="submit" class="btn btn-primary btn-sm">Accept Request</button>
+                                    </form>
+                                    <span th:if="${shopkeeper.approvalStatus.name() != 'APPROVED'}" class="badge badge-accepted">
+                                        Pending Admin
+                                    </span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

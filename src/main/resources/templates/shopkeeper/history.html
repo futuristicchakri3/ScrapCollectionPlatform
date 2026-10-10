@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settlement History — Scrap Connection</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+    <main class="main-content">
+        <div class="container">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:2rem;">
+                <div>
+                    <a th:href="@{/shopkeeper/dashboard}" style="font-size:0.875rem; color:var(--text-muted); font-weight:600;">← Back to Dashboard</a>
+                    <h1 style="font-size:2.2rem; margin-top:0.4rem;">Completed Settlements History</h1>
+                    <p style="color:var(--text-muted);">Audited transaction receipts of all completed scrap collections</p>
+                </div>
+            </div>
+
+            <div th:replace="~{fragments/alerts :: alerts}"></div>
+
+            <div class="card">
+                <div th:if="${#lists.isEmpty(settlements)}" style="text-align:center; padding:3.5rem 1rem;">
+                    <div style="font-size:2.5rem; margin-bottom:0.75rem;">🧾</div>
+                    <h3>No Completed Settlements</h3>
+                    <p style="color:var(--text-muted); font-size:0.9rem;">
+                        Once you weigh and complete pickups, official settlement records will be archived here.
+                    </p>
+                </div>
+
+                <div th:if="${!#lists.isEmpty(settlements)}" class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Settled Timestamp</th>
+                                <th>Booking Ref</th>
+                                <th>Customer Name</th>
+                                <th>Gross Value</th>
+                                <th>Deductions</th>
+                                <th>Net Paid</th>
+                                <th>Method</th>
+                                <th>Transaction Ref</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="s : ${settlements}">
+                                <td th:text="${#temporals.format(s.settledAt, 'dd MMM yyyy, hh:mm a')}">Date</td>
+                                <td>
+                                    <strong style="color:var(--primary-dark);" th:text="${s.booking.bookingReference}">SC-1234</strong>
+                                </td>
+                                <td th:text="${s.booking.customerProfile.fullName}">Customer</td>
+                                <td>₹<span th:text="${#numbers.formatDecimal(s.grossAmount, 1, 2)}">100.00</span></td>
+                                <td>
+                                    <span th:if="${s.deductions != null and s.deductions > 0}" style="color:var(--danger);">
+                                        -₹<span th:text="${#numbers.formatDecimal(s.deductions, 1, 2)}">10.00</span>
+                                    </span>
+                                    <span th:if="${s.deductions == null or s.deductions == 0}">₹0.00</span>
+                                </td>
+                                <td>
+                                    <strong style="color:var(--primary-dark); font-size:1.05rem;">
+                                        ₹<span th:text="${#numbers.formatDecimal(s.netAmount, 1, 2)}">90.00</span>
+                                    </strong>
+                                </td>
+                                <td>
+                                    <span class="badge badge-accepted" th:text="${s.settlementMethod}">CASH</span>
+                                </td>
+                                <td><code th:text="${s.transactionReference}">CASH-1234</code></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

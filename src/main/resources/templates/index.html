@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scrap Connection — Doorstep Scrap Collection & Circular Marketplace</title>
+    <meta name="description" content="Connect with verified scrap shopkeepers, schedule doorstep recycling pickups, earn loyalty points and shop sustainable products with coupon wallets.">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+    <main class="main-content" style="padding-top:0;">
+        <!-- HERO SECTION -->
+        <section class="hero-section">
+            <div class="container hero-grid">
+                <div>
+                    <h1 class="hero-title">
+                        Sell Your Scrap at <span>Fair Rates</span>, Right from Your Doorstep
+                    </h1>
+                    <p class="hero-subtitle">
+                        Scrap Connection empowers households to schedule doorstep scrap pickups with verified local dealers. Get transparent digital weighing, instant settlements in Cash, UPI, or Shopping Coupons, and earn loyalty points on every recycling milestone.
+                    </p>
+                    <div class="hero-cta">
+                        <a th:href="@{/register/customer}" class="btn btn-primary btn-lg" id="btnHeroSell">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polyline points="12 6 12 12 16 14"></polyline>
+                            </svg>
+                            Schedule a Pickup
+                        </a>
+                        <a th:href="@{/marketplace}" class="btn btn-secondary btn-lg" id="btnHeroMarketplace" style="background:rgba(255,255,255,0.15); color:white; border-color:rgba(255,255,255,0.3);">
+                            Explore Recycled Goods
+                        </a>
+                        <a th:href="@{/register/shopkeeper}" class="btn btn-secondary btn-lg" style="background:white; color:var(--text-main);">
+                            Join as Shopkeeper
+                        </a>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="hero-card">
+                        <h3 style="font-size:1.35rem; margin-bottom:1rem; display:flex; align-items:center; gap:0.5rem;">
+                            <span>♻️</span> Why Choose Scrap Connection?
+                        </h3>
+                        <ul style="list-style:none; display:flex; flex-direction:column; gap:0.85rem; font-size:0.95rem;">
+                            <li style="display:flex; gap:0.6rem; align-items:flex-start;">
+                                <strong style="color:#34d399;">✓</strong>
+                                <span><strong>Verified Shopkeepers:</strong> Admin-audited local collectors with certified scales.</span>
+                            </li>
+                            <li style="display:flex; gap:0.6rem; align-items:flex-start;">
+                                <strong style="color:#34d399;">✓</strong>
+                                <span><strong>Guaranteed Standard Rates:</strong> Transparent rates per kg for paper, plastic, iron, metals, and e-waste.</span>
+                            </li>
+                            <li style="display:flex; gap:0.6rem; align-items:flex-start;">
+                                <strong style="color:#34d399;">✓</strong>
+                                <span><strong>Wallet Coupon System:</strong> Opt for coupons and unlock discounts in our Recycled Marketplace.</span>
+                            </li>
+                            <li style="display:flex; gap:0.6rem; align-items:flex-start;">
+                                <strong style="color:#34d399;">✓</strong>
+                                <span><strong>Loyalty Points:</strong> Earn points on completed pickups and track your environmental footprint.</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="container">
+            <div th:replace="~{fragments/alerts :: alerts}"></div>
+
+            <!-- LIVE RATES SECTION -->
+            <section style="margin-bottom: 4rem;">
+                <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:1.5rem;">
+                    <div>
+                        <span class="badge badge-accepted" style="margin-bottom:0.4rem;">Live Market Standard</span>
+                        <h2>Today's Scrap Buying Rates</h2>
+                        <p style="color:var(--text-muted); font-size:0.95rem;">Standard verified base rates per kilogram applied during doorstep pickups</p>
+                    </div>
+                    <a th:href="@{/register/customer}" class="btn btn-outline-primary btn-sm">Book Today at These Rates →</a>
+                </div>
+
+                <div class="grid grid-cols-4">
+                    <div th:each="price : ${prices}" class="price-card">
+                        <div class="product-category" th:text="${price.category.displayName}">Category</div>
+                        <div class="price-rate">
+                            ₹<span th:text="${#numbers.formatDecimal(price.pricePerKg, 1, 2)}">15.00</span>
+                            <span style="font-size:0.85rem; color:var(--text-muted); font-weight:500;">/ kg</span>
+                        </div>
+                        <p style="font-size:0.8rem; color:var(--text-muted); margin-top:0.4rem;" th:text="${price.category.description}">Details</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- HOW IT WORKS SECTION -->
+            <section style="margin-bottom: 4.5rem; background:white; border:1px solid var(--border-color); border-radius:var(--radius-xl); padding:3rem 2rem;">
+                <div style="text-align:center; max-width:650px; margin:0 auto 2.5rem auto;">
+                    <span class="badge badge-progress" style="margin-bottom:0.5rem;">Seamless 4-Step Process</span>
+                    <h2>How Scrap Connection Works</h2>
+                    <p style="color:var(--text-muted);">From cluttered house to eco-rewards in four transparent steps</p>
+                </div>
+
+                <div class="grid grid-cols-4" style="gap:2rem;">
+                    <div style="text-align:center;">
+                        <div style="width:60px; height:60px; background:var(--primary-light); color:var(--primary-dark); font-size:1.5rem; font-weight:800; border-radius:var(--radius-full); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem auto;">1</div>
+                        <h4 style="margin-bottom:0.5rem;">1. Book Pickup</h4>
+                        <p style="font-size:0.875rem; color:var(--text-muted);">Choose your scrap categories, estimated weight, date, and time slot.</p>
+                    </div>
+
+                    <div style="text-align:center;">
+                        <div style="width:60px; height:60px; background:var(--secondary-light); color:var(--secondary); font-size:1.5rem; font-weight:800; border-radius:var(--radius-full); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem auto;">2</div>
+                        <h4 style="margin-bottom:0.5rem;">2. Dealer Accepts</h4>
+                        <p style="font-size:0.875rem; color:var(--text-muted);">A verified nearby scrap shopkeeper accepts the request and visits your doorstep.</p>
+                    </div>
+
+                    <div style="text-align:center;">
+                        <div style="width:60px; height:60px; background:var(--accent-gold-light); color:var(--accent-gold); font-size:1.5rem; font-weight:800; border-radius:var(--radius-full); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem auto;">3</div>
+                        <h4 style="margin-bottom:0.5rem;">3. Weigh & Settle</h4>
+                        <p style="font-size:0.875rem; color:var(--text-muted);">Transparent weighing with digital scale. Receive Cash, UPI, or Platform Coupons.</p>
+                    </div>
+
+                    <div style="text-align:center;">
+                        <div style="width:60px; height:60px; background:var(--accent-purple-light); color:var(--accent-purple); font-size:1.5rem; font-weight:800; border-radius:var(--radius-full); display:flex; align-items:center; justify-content:center; margin:0 auto 1rem auto;">4</div>
+                        <h4 style="margin-bottom:0.5rem;">4. Shop & Earn</h4>
+                        <p style="font-size:0.875rem; color:var(--text-muted);">Earn loyalty points and spend coupon wallet balance on recycled marketplace items.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- RECYCLED MARKETPLACE HIGHLIGHT -->
+            <section style="margin-bottom: 4rem;">
+                <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:1.5rem;">
+                    <div>
+                        <span class="badge badge-active" style="margin-bottom:0.4rem;">Circular Economy</span>
+                        <h2>Featured Recycled Products</h2>
+                        <p style="color:var(--text-muted); font-size:0.95rem;">Use your scrap sale coupons to buy eco-friendly products made from recycled materials</p>
+                    </div>
+                    <a th:href="@{/marketplace}" class="btn btn-outline-primary btn-sm">View Full Marketplace →</a>
+                </div>
+
+                <div class="grid grid-cols-4">
+                    <div th:each="product : ${featuredProducts}" class="product-card">
+                        <div class="product-image-box">
+                            <span>🌱</span>
+                        </div>
+                        <div class="product-details">
+                            <span class="product-category" th:text="${product.category}">Category</span>
+                            <h4 class="product-title" th:text="${product.name}">Product Name</h4>
+                            <div class="product-price">
+                                ₹<span th:text="${#numbers.formatDecimal(product.price, 1, 2)}">199.00</span>
+                            </div>
+                            <a th:href="@{/marketplace/product/{id}(id=${product.id})}" class="btn btn-secondary btn-sm" style="width:100%;">View Product</a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PLATFORM IMPACT STATS -->
+            <section style="background:linear-gradient(135deg, #ecfdf5, #d1fae5); border:1px solid var(--primary-border); border-radius:var(--radius-xl); padding:2.5rem; margin-bottom:4rem;">
+                <div class="grid grid-cols-3" style="text-align:center;">
+                    <div>
+                        <div class="stat-value" style="color:var(--primary-dark);" th:text="${totalCustomers}">150</div>
+                        <div class="stat-label">Verified Eco-Conscious Customers</div>
+                    </div>
+                    <div>
+                        <div class="stat-value" style="color:var(--primary-dark);" th:text="${totalShopkeepers}">25</div>
+                        <div class="stat-label">Approved Partner Scrap Dealers</div>
+                    </div>
+                    <div>
+                        <div class="stat-value" style="color:var(--primary-dark);" th:text="${totalBookings}">320</div>
+                        <div class="stat-label">Doorstep Pickups Coordinated</div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+    <script th:src="@{/js/main.js}"></script>
+</body>
+</html>

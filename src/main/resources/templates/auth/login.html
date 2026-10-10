@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login — Scrap Connection</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .auth-container {
+            max-width: 480px;
+            margin: 2rem auto;
+        }
+        .login-tabs {
+            display: flex;
+            border-bottom: 2px solid var(--border-color);
+            margin-bottom: 1.5rem;
+        }
+        .login-tab {
+            flex: 1;
+            padding: 0.75rem;
+            text-align: center;
+            font-weight: 700;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+            transition: var(--transition);
+        }
+        .login-tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+        .dev-credentials-box {
+            background: #f8fafc;
+            border: 1px dashed #cbd5e1;
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            margin-top: 1.5rem;
+            font-size: 0.825rem;
+        }
+    </style>
+</head>
+<body>
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+    <main class="main-content">
+        <div class="container">
+            <div class="auth-container">
+                <div class="card" style="padding: 2.25rem;">
+                    <div style="text-align: center; margin-bottom: 1.5rem;">
+                        <div class="brand-icon" style="margin: 0 auto 0.75rem auto;">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                <path d="M7 19H4.815a1.83 1.83 0 0 1-1.57-.881 1.785 1.785 0 0 1-.004-1.784L7.196 9.5"/>
+                                <path d="M11 19h8.2a1.8 1.8 0 0 0 1.6-1 1.8 1.8 0 0 0 0-1.8L16.5 8"/>
+                                <path d="m14 4-2-2-2 2"/>
+                                <path d="M12 2v8"/>
+                            </svg>
+                        </div>
+                        <h2>Welcome to Scrap Connection</h2>
+                        <p style="color:var(--text-muted); font-size:0.9rem;">Sign in to your Customer, Shopkeeper, or Admin account</p>
+                    </div>
+
+                    <div th:replace="~{fragments/alerts :: alerts}"></div>
+
+                    <div class="login-tabs">
+                        <div class="login-tab active" id="tabPassword" onclick="switchTab('password')">Password Login</div>
+                        <div class="login-tab" id="tabOtp" onclick="switchTab('otp')">Mobile OTP Login</div>
+                    </div>
+
+                    <!-- 1. Password Login Form (Spring Security Form Login) -->
+                    <form id="passwordForm" th:action="@{/login}" method="post">
+                        <div class="form-group">
+                            <label class="form-label" for="mobileNumber">Registered Mobile Number</label>
+                            <input type="tel" id="mobileNumber" name="mobileNumber" class="form-control"
+                                   placeholder="e.g. 9876543210" pattern="[6-9][0-9]{9}" required autofocus>
+                            <div class="form-text">Enter your 10-digit Indian mobile number</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="password">Password</label>
+                            <input type="password" id="password" name="password" class="form-control"
+                                   placeholder="Enter your password" required>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;" id="btnLoginSubmit">
+                            Secure Sign In
+                        </button>
+                    </form>
+
+                    <!-- 2. OTP Login Form -->
+                    <form id="otpForm" th:action="@{/send-login-otp}" method="post" style="display: none;">
+                        <div class="form-group">
+                            <label class="form-label" for="otpMobileNumber">Registered Mobile Number</label>
+                            <input type="tel" id="otpMobileNumber" name="mobileNumber" class="form-control"
+                                   placeholder="e.g. 9876543210" pattern="[6-9][0-9]{9}" required>
+                            <div class="form-text">We'll send a 6-digit one-time password to verify your account</div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;" id="btnSendOtp">
+                            Send Login OTP
+                        </button>
+                    </form>
+
+                    <div style="text-align: center; margin-top: 1.5rem; font-size: 0.875rem; color: var(--text-muted);">
+                        New to Scrap Connection?
+                        <br>
+                        <a th:href="@{/register/customer}" style="font-weight: 700; color: var(--primary);">Register as Customer</a>
+                        &nbsp;|&nbsp;
+                        <a th:href="@{/register/shopkeeper}" style="font-weight: 700; color: var(--primary);">Partner Shopkeeper</a>
+                    </div>
+
+                    <!-- Development Quick Test Accounts Helper -->
+                    <div class="dev-credentials-box" th:if="${isDevMode == true}">
+                        <strong style="color:var(--text-main); display:block; margin-bottom:0.5rem;">🧪 Quick Demo Accounts (Click to Fill):</strong>
+                        <div style="display:flex; flex-direction:column; gap:0.35rem;">
+                            <a href="javascript:void(0)" onclick="fillCredentials('9999999999', 'Admin@1234')" style="color:var(--primary-dark);">
+                                • <strong>Admin:</strong> 9999999999 / Admin@1234
+                            </a>
+                            <a href="javascript:void(0)" onclick="fillCredentials('9876543210', 'Customer@123')" style="color:var(--primary-dark);">
+                                • <strong>Customer:</strong> 9876543210 / Customer@123
+                            </a>
+                            <a href="javascript:void(0)" onclick="fillCredentials('9123456789', 'Shop@123')" style="color:var(--primary-dark);">
+                                • <strong>Approved Shopkeeper:</strong> 9123456789 / Shop@123
+                            </a>
+                            <a href="javascript:void(0)" onclick="fillCredentials('9811122233', 'Shop@123')" style="color:var(--primary-dark);">
+                                • <strong>Pending Shopkeeper:</strong> 9811122233 / Shop@123
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+    <script th:src="@{/js/main.js}"></script>
+    <script>
+        function switchTab(mode) {
+            const passTab = document.getElementById('tabPassword');
+            const otpTab = document.getElementById('tabOtp');
+            const passForm = document.getElementById('passwordForm');
+            const otpForm = document.getElementById('otpForm');
+
+            if (mode === 'password') {
+                passTab.classList.add('active');
+                otpTab.classList.remove('active');
+                passForm.style.display = 'block';
+                otpForm.style.display = 'none';
+            } else {
+                otpTab.classList.add('active');
+                passTab.classList.remove('active');
+                otpForm.style.display = 'block';
+                passForm.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

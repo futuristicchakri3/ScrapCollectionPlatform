@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout — Scrap Connection Marketplace</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .checkout-container {
+            max-width: 980px;
+            margin: 0 auto;
+        }
+        .coupon-box {
+            background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+            border: 2px dashed #059669;
+            border-radius: var(--radius-lg);
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+    <main class="main-content">
+        <div class="container">
+            <div class="checkout-container">
+                <div style="margin-bottom: 2rem;">
+                    <a th:href="@{/marketplace/cart}" style="font-size:0.875rem; color:var(--text-muted); font-weight:600;">← Back to Cart</a>
+                    <h1 style="font-size:2.2rem; margin-top:0.4rem;">Checkout & Order Finalization</h1>
+                </div>
+
+                <div th:replace="~{fragments/alerts :: alerts}"></div>
+
+                <form th:action="@{/marketplace/checkout}" th:object="${checkoutDto}" method="post">
+                    <div class="grid grid-cols-3" style="gap:2rem;">
+                        <!-- Shipping & Payment Form (2 cols) -->
+                        <div style="grid-column: span 2;">
+                            <div class="card" style="margin-bottom:1.5rem;">
+                                <h3 class="card-title" style="margin-bottom:1rem;">1. Delivery Information</h3>
+
+                                <div class="form-group">
+                                    <label class="form-label" for="deliveryAddress">Delivery Address *</label>
+                                    <textarea id="deliveryAddress" th:field="*{deliveryAddress}" class="form-control" rows="2"
+                                              placeholder="Street address, building, apartment" required></textarea>
+                                    <div class="form-error" th:if="${#fields.hasErrors('deliveryAddress')}" th:errors="*{deliveryAddress}"></div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label" for="contactNumber">Contact Mobile Number *</label>
+                                    <input type="tel" id="contactNumber" th:field="*{contactNumber}" class="form-control"
+                                           placeholder="10-digit mobile" pattern="[6-9][0-9]{9}" required>
+                                    <div class="form-error" th:if="${#fields.hasErrors('contactNumber')}" th:errors="*{contactNumber}"></div>
+                                </div>
+                            </div>
+
+                            <!-- Coupon Wallet Section -->
+                            <div class="card" style="margin-bottom:1.5rem;">
+                                <h3 class="card-title" style="margin-bottom:1rem;">2. Coupon Wallet Deduction</h3>
+
+                                <div class="coupon-box" th:if="${availableCouponBalance > 0}">
+                                    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem;">
+                                        <div>
+                                            <div style="font-weight:800; color:var(--primary-dark); font-size:1.15rem;">
+                                                🎫 Available Scrap Coupon Balance: ₹<span th:text="${#numbers.formatDecimal(availableCouponBalance, 1, 2)}">100.00</span>
+                                            </div>
+                                            <div style="font-size:0.825rem; color:var(--text-muted); margin-top:0.25rem;">
+                                                Formula: Coupon used = Minimum(order payable, available coupon balance).
+                                            </div>
+                                        </div>
+                                        <div class="form-check" style="margin:0;">
+                                            <input type="checkbox" id="applyCouponCheckbox" th:field="*{applyCoupon}"
+                                                   class="form-check-input" th:attr="data-available=${availableCouponBalance}">
+                                            <label for="applyCouponCheckbox" style="font-weight:700; color:var(--primary-dark); cursor:pointer;">
+                                                Apply Coupon Wallet
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div th:if="${availableCouponBalance <= 0}" style="font-size:0.875rem; color:var(--text-muted);">
+                                    You have no active coupon balance. (Tip: Sell scrap and choose "COUPON" settlement to earn shopping credits!)
+                                </div>
+                            </div>
+
+                            <!-- Payment Method for remaining payable -->
+                            <div class="card">
+                                <h3 class="card-title" style="margin-bottom:1rem;">3. Settlement for Remaining Balance</h3>
+                                <div class="grid grid-cols-2" style="gap:1rem;">
+                                    <label style="border:1px solid var(--border-color); border-radius:var(--radius-md); padding:1rem; cursor:pointer; display:flex; align-items:center; gap:0.5rem;">
+                                        <input type="radio" th:field="*{paymentMethod}" value="CASH" checked class="form-check-input">
+                                        <div>
+                                            <strong style="display:block;">Cash on Delivery</strong>
+                                            <span style="font-size:0.75rem; color:var(--text-muted);">Pay cash upon package arrival</span>
+                                        </div>
+                                    </label>
+
+                                    <label style="border:1px solid var(--border-color); border-radius:var(--radius-md); padding:1rem; cursor:pointer; display:flex; align-items:center; gap:0.5rem;">
+                                        <input type="radio" th:field="*{paymentMethod}" value="UPI" class="form-check-input">
+                                        <div>
+                                            <strong style="display:block;">UPI on Delivery</strong>
+                                            <span style="font-size:0.75rem; color:var(--text-muted);">Pay via UPI QR scanner upon delivery</span>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Order Review & Final Calculation (1 col) -->
+                        <div>
+                            <div class="card" style="padding:1.75rem;">
+                                <h3 class="card-title" style="margin-bottom:1rem;">Review Items</h3>
+
+                                <div style="display:flex; flex-direction:column; gap:0.75rem; margin-bottom:1.25rem;">
+                                    <div th:each="item : ${cartItems}" style="display:flex; justify-content:space-between; font-size:0.875rem;">
+                                        <div>
+                                            <span th:text="${item.product.name}">Product</span>
+                                            <span style="color:var(--text-muted); font-size:0.75rem;" th:text="${' × ' + item.quantity}">× 1</span>
+                                        </div>
+                                        <strong>₹<span th:text="${#numbers.formatDecimal(item.product.price * item.quantity, 1, 2)}">100.00</span></strong>
+                                    </div>
+                                </div>
+
+                                <div style="border-top:1px solid var(--border-color); padding-top:1rem; margin-top:1rem;">
+                                    <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem; font-size:0.95rem;">
+                                        <span>Order Subtotal:</span>
+                                        <strong id="checkoutSubtotal" th:attr="data-subtotal=${subtotal}">
+                                            ₹<span th:text="${#numbers.formatDecimal(subtotal, 1, 2)}">0.00</span>
+                                        </strong>
+                                    </div>
+
+                                    <div style="display:flex; justify-content:space-between; margin-bottom:0.75rem; font-size:0.95rem; color:var(--primary-dark);">
+                                        <span>Coupon Discount:</span>
+                                        <strong id="checkoutCouponDiscount">-₹0.00</strong>
+                                    </div>
+
+                                    <div style="display:flex; justify-content:space-between; border-top:2px solid var(--border-color); padding-top:0.75rem; font-size:1.35rem; font-weight:800; color:var(--text-main);">
+                                        <span>Final Payable:</span>
+                                        <span id="checkoutPayable" style="color:var(--primary-dark);">
+                                            ₹<span th:text="${#numbers.formatDecimal(subtotal, 1, 2)}">0.00</span>
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="btn btn-primary btn-lg" style="width:100%; margin-top:1.5rem;" id="btnPlaceOrder">
+                                    Place Order
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+    <script th:src="@{/js/main.js}"></script>
+</body>
+</html>

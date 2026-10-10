@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopkeeper Approvals & Management — Scrap Connection Admin</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+    <main class="main-content">
+        <div class="container">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:2rem;">
+                <div>
+                    <a th:href="@{/admin/dashboard}" style="font-size:0.875rem; color:var(--text-muted); font-weight:600;">← Back to Dashboard</a>
+                    <h1 style="font-size:2.2rem; margin-top:0.4rem;">Shopkeeper Partner Verification</h1>
+                    <p style="color:var(--text-muted);">Review new shopkeeper registration applications, verify physical premises, and authorize pickup access</p>
+                </div>
+            </div>
+
+            <div th:replace="~{fragments/alerts :: alerts}"></div>
+
+            <!-- Pending Approvals Section -->
+            <div class="card" style="margin-bottom:2.5rem; border-color:#fde68a;">
+                <div class="card-header" style="background:#fffbeb; margin:-1.5rem -1.5rem 1.25rem -1.5rem; padding:1.25rem 1.5rem; border-radius:var(--radius-lg) var(--radius-lg) 0 0;">
+                    <div style="display:flex; align-items:center; gap:0.5rem;">
+                        <span style="font-size:1.2rem;">⏳</span>
+                        <h3 class="card-title" style="color:#b45309; margin:0;">Pending Shopkeeper Approvals (<span th:text="${#lists.size(pendingShopkeepers)}">0</span>)</h3>
+                    </div>
+                </div>
+
+                <div th:if="${#lists.isEmpty(pendingShopkeepers)}" style="text-align:center; padding:2.5rem 1rem; color:var(--text-muted);">
+                    All shopkeeper applications have been reviewed. No pending approvals!
+                </div>
+
+                <div th:if="${!#lists.isEmpty(pendingShopkeepers)}" class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Shop Name & Owner</th>
+                                <th>Contact & Mobile</th>
+                                <th>Physical Address</th>
+                                <th>Locality & City</th>
+                                <th>Categories</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="s : ${pendingShopkeepers}">
+                                <td>
+                                    <strong style="color:var(--text-main);" th:text="${s.shopName}">Shop Name</strong>
+                                    <div style="font-size:0.8rem; color:var(--text-muted);" th:text="${'Prop. ' + s.ownerName}">Owner</div>
+                                </td>
+                                <td>
+                                    <div style="font-weight:700;" th:text="${s.user.mobileNumber}">9876543210</div>
+                                    <div style="font-size:0.75rem; color:var(--text-muted);" th:text="${s.email}">Email</div>
+                                </td>
+                                <td style="font-size:0.85rem;" th:text="${s.shopAddress}">Address</td>
+                                <td>
+                                    <div th:text="${s.locality}">Locality</div>
+                                    <div style="font-size:0.75rem; color:var(--text-muted);" th:text="${s.city + ' - ' + s.postalCode}">City, PIN</div>
+                                </td>
+                                <td>
+                                    <span class="badge badge-requested" th:text="${s.supportedCategories}">ALL</span>
+                                </td>
+                                <td>
+                                    <div style="display:flex; gap:0.5rem;">
+                                        <!-- Approve Action -->
+                                        <form th:action="@{/admin/shopkeepers/{id}/approve(id=${s.id})}" method="post">
+                                            <button type="submit" class="btn btn-primary btn-sm" onclick="return confirm('Approve this shopkeeper for active operation?')">
+                                                Approve
+                                            </button>
+                                        </form>
+
+                                        <!-- Reject Form Modal/Prompt -->
+                                        <form th:action="@{/admin/shopkeepers/{id}/reject(id=${s.id})}" method="post" style="display:flex; gap:0.25rem;">
+                                            <input type="text" name="reason" placeholder="Reject reason" class="form-control" style="width:120px; font-size:0.75rem; padding:0.25rem 0.5rem;" required>
+                                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Reject this shopkeeper registration?')">
+                                                Reject
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- All Registered Shopkeepers -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">All Registered Shopkeepers Directory</h3>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Shop Name & Owner</th>
+                                <th>Mobile</th>
+                                <th>Locality & City</th>
+                                <th>Approval Status</th>
+                                <th>Registered Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="s : ${shopkeepers}">
+                                <td>
+                                    <strong th:text="${s.shopName}">Shop Name</strong>
+                                    <div style="font-size:0.75rem; color:var(--text-muted);" th:text="${'Prop. ' + s.ownerName}">Owner</div>
+                                </td>
+                                <td th:text="${s.user.mobileNumber}">Phone</td>
+                                <td th:text="${s.locality + ', ' + s.city}">Locality</td>
+                                <td>
+                                    <span th:if="${s.approvalStatus.name() == 'APPROVED'}" class="badge badge-completed">Approved & Active</span>
+                                    <span th:if="${s.approvalStatus.name() == 'PENDING'}" class="badge badge-accepted">Pending Approval</span>
+                                    <span th:if="${s.approvalStatus.name() == 'REJECTED'}" class="badge badge-cancelled">Rejected</span>
+                                </td>
+                                <td th:text="${#temporals.format(s.createdAt, 'dd MMM yyyy')}">Date</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

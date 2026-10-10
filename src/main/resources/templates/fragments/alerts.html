@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head></head>
+<body>
+<div th:fragment="alerts">
+    <!-- Success Alert -->
+    <div th:if="${successMessage}" class="alert alert-success">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+        </svg>
+        <div th:text="${successMessage}">Success message text</div>
+    </div>
+
+    <!-- Error Alert -->
+    <div th:if="${errorMessage}" class="alert alert-danger">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <div th:text="${errorMessage}">Error message text</div>
+    </div>
+
+    <!-- Development OTP Banner (Only visible when devOtp is present in model) -->
+    <div th:if="${devOtp != null}" class="alert alert-dev">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+            <line x1="12" y1="9" x2="12" y2="13"></line>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+        </svg>
+        <div>
+            <strong>[DEVELOPMENT OTP ACTIVE]</strong> The system generated test OTP is: 
+            <span style="font-size:1.15rem; font-weight:800; background:#fff; padding:0.15rem 0.6rem; border-radius:4px; border:1px solid #d97706;" th:text="${devOtp}">123456</span>
+            <span style="display:block; font-size:0.8rem; margin-top:0.25rem;">(SMS provider is in development mode so no real SMS is sent. Use this code to verify!)</span>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administrator Audit Logs — Scrap Connection Admin</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+    <main class="main-content">
+        <div class="container">
+            <div style="margin-bottom: 2rem;">
+                <a th:href="@{/admin/dashboard}" style="font-size:0.875rem; color:var(--text-muted); font-weight:600;">← Back to Dashboard</a>
+                <h1 style="font-size:2.2rem; margin-top:0.4rem;">Administrative Audit Trail</h1>
+                <p style="color:var(--text-muted);">Immutable chronological log of administrative approvals, price adjustments, and system modifications</p>
+            </div>
+
+            <div class="card">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>Admin User</th>
+                                <th>Action Performed</th>
+                                <th>Target Entity</th>
+                                <th>Details</th>
+                                <th>IP Address</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="log : ${auditLogs}">
+                                <td style="font-size:0.85rem;" th:text="${#temporals.format(log.timestamp, 'dd MMM yyyy, hh:mm:ss a')}">Time</td>
+                                <td>
+                                    <strong th:if="${log.adminUser != null}" th:text="${log.adminUser.mobileNumber}">Admin</strong>
+                                    <span th:if="${log.adminUser == null}">System</span>
+                                </td>
+                                <td>
+                                    <span class="badge badge-accepted" th:text="${log.action}">ACTION</span>
+                                </td>
+                                <td>
+                                    <code th:text="${log.targetEntity + (log.targetEntityId != null ? ' #' + log.targetEntityId : '')}">Entity</code>
+                                </td>
+                                <td style="font-size:0.875rem;" th:text="${log.details}">Details</td>
+                                <td style="font-size:0.8rem; color:var(--text-muted);" th:text="${log.ipAddress}">IP</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>
